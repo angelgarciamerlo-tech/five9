@@ -19,13 +19,13 @@ with open("five9_chunks.json", "r", encoding="utf-8") as f:
 print(f"🧠 Sistema cargado: {len(chunks)} chunks, FAISS {index.ntotal} vectores")
 
 # ============================
-# 2. Cargar modelo LLM ligero
+# 2. Cargar modelo LLM ligero para CPU
 # ============================
 generator = pipeline(
     "text-generation",
-    model="EleutherAI/gpt-neo-125M",  # modelo seguro para CPU
-    device=-1,                        # CPU
-    max_new_tokens=128,               # límite seguro para Render
+    model="distilgpt2",   # modelo más pequeño y seguro para Render
+    device=-1,            # CPU
+    max_new_tokens=64,    # límite bajo para no exceder RAM
     temperature=0.3,
 )
 
@@ -78,7 +78,7 @@ Answer:
 """
 
     # Generar respuesta (CPU, seguro en Render)
-    response = generator(prompt, do_sample=False, max_new_tokens=128)[0]["generated_text"]
+    response = generator(prompt, do_sample=False, max_new_tokens=64)[0]["generated_text"]
 
     return {
         "answer": response.strip(),
@@ -90,4 +90,6 @@ Answer:
 # ============================
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import os
+    port = int(os.environ.get("PORT", 8000))  # puerto dinámico para Render
+    uvicorn.run(app, host="0.0.0.0", port=port)
